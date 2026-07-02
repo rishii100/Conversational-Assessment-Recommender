@@ -23,21 +23,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Startup: load catalog and build FAISS index."""
-    logger.info("Starting up — loading catalog and building search index...")
-    build_index()
-    logger.info("Startup complete — ready to serve requests.")
-    yield
-    logger.info("Shutting down.")
-
-
 app = FastAPI(
     title="SHL Assessment Recommender",
     description="Conversational agent that recommends SHL assessments based on role requirements.",
     version="1.0.0",
-    lifespan=lifespan,
 )
 
 # Allow CORS for testing from any origin
@@ -53,6 +42,7 @@ app.add_middleware(
 @app.get("/health")
 async def health():
     """Readiness check — returns 200 with {"status": "ok"}."""
+    build_index()  # Ensure index is warmed up
     return {"status": "ok"}
 
 
