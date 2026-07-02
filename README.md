@@ -4,7 +4,7 @@ A stateless, agentic FastAPI microservice that acts as an intelligent assistant 
 
 ## 🏗 System Architecture
 
-The project utilizes a Retrieval-Augmented Generation (RAG) architecture. When a user sends a chat message, the system extracts a semantic query, retrieves the most relevant SHL assessments using sentence-transformers, and injects them into the Gemini LLM prompt to ensure 100% catalog compliance.
+The project utilizes a Retrieval-Augmented Generation (RAG) architecture. When a user sends a chat message, the system extracts a semantic query, retrieves the most relevant SHL assessments using TF-IDF (Term Frequency-Inverse Document Frequency), and injects them into the Gemini LLM prompt to ensure 100% catalog compliance.
 
 ```mermaid
 graph TD
@@ -16,15 +16,14 @@ graph TD
         Agent -->|1. Search Query| Retriever[Semantic Retriever]
         
         subgraph "Knowledge Retrieval Base"
-            Retriever -->|Encode Query| Model[all-MiniLM-L6-v2]
-            Model -->|Cosine Sim| VectorStore[(Numpy Embedding Index)]
-            VectorStore -->|Top-K Match| CatalogData[SHL Catalog Data]
+            Retriever -->|TF-IDF Transform| VectorStore[(scikit-learn Index)]
+            VectorStore -->|Cosine Sim| CatalogData[SHL Catalog Data]
         end
         
         Retriever -->|2. Assessment Context| Prompt[Prompt Builder]
         Agent -->|Conversation History| Prompt
         
-        Prompt -->|3. System + History| Gemini[Gemini 1.5 Flash]
+        Prompt -->|3. System + History| Gemini[Gemini LLM]
         Gemini -->|Structured JSON| Validator[Response Validator]
         
         Validator -->|4. Verify URLs| CatalogData
@@ -35,7 +34,7 @@ graph TD
 ## 🚀 Key Features
 
 - **Stateless Design**: Adheres to RESTful principles. State is entirely driven by the `messages` array in the request body.
-- **Semantic Grounding**: Embeds the catalog locally using `sentence-transformers` (`all-MiniLM-L6-v2`) and matches queries using vector cosine similarity.
+- **Lightweight Semantic Grounding**: Embeds the catalog locally using `scikit-learn` (TF-IDF) and matches queries using vector cosine similarity. This avoids massive PyTorch dependencies, allowing the app to fit inside Vercel's 500MB serverless constraints.
 - **Strict Schema Compliance**: Enforces exact JSON schemas (Reply, Recommendations, End-of-conversation flag) through `Pydantic` and Gemini Structured Output limits.
 - **Behavioral Guardrails**: Agent explicitly refuses off-topic legal/salary inquiries, clarifies vague requests, and updates shortlists smoothly across turns.
 
@@ -57,8 +56,7 @@ graph TD
    Open the `.env` file and insert your Gemini API Key:
    ```env
    GEMINI_API_KEY=your_actual_key_here
-   GEMINI_MODEL=gemini-1.5-flash
-   EMBEDDING_MODEL=all-MiniLM-L6-v2
+   GEMINI_MODEL=gemini-2.0-flash
    ```
 
 3. **Running the Server**
