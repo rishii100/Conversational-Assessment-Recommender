@@ -1,10 +1,10 @@
 # Conversational Assessment Recommender
 
-A stateless, agentic FastAPI microservice that acts as an intelligent assistant for recommending SHL product catalog assessments. The system uses a semantic retrieval engine to ground its recommendations in actual catalog data and is powered by Google's Gemini LLM with strict behavioral guardrails.
+A stateless, agentic FastAPI microservice that acts as an intelligent assistant for recommending SHL product catalog assessments. The system uses a semantic retrieval engine to ground its recommendations in actual catalog data and is powered by Groq (Llama 3.1 8B) with strict behavioral guardrails.
 
 ## 🏗 System Architecture
 
-The project utilizes a Retrieval-Augmented Generation (RAG) architecture. When a user sends a chat message, the system extracts a semantic query, retrieves the most relevant SHL assessments using TF-IDF (Term Frequency-Inverse Document Frequency), and injects them into the Gemini LLM prompt to ensure 100% catalog compliance.
+The project utilizes a Retrieval-Augmented Generation (RAG) architecture. When a user sends a chat message, the system extracts a semantic query, retrieves the most relevant SHL assessments using TF-IDF (Term Frequency-Inverse Document Frequency), and injects them into the Groq Llama prompt to ensure 100% catalog compliance.
 
 ```mermaid
 graph TD
@@ -23,8 +23,8 @@ graph TD
         Retriever -->|2. Assessment Context| Prompt[Prompt Builder]
         Agent -->|Conversation History| Prompt
         
-        Prompt -->|3. System + History| Gemini[Gemini LLM]
-        Gemini -->|Structured JSON| Validator[Response Validator]
+        Prompt -->|3. System + History| GroqLLM[Groq Llama 3.1]
+        GroqLLM -->|Structured JSON| Validator[Response Validator]
         
         Validator -->|4. Verify URLs| CatalogData
         Validator -->|5. Validated Recs| FastAPI
@@ -35,13 +35,13 @@ graph TD
 
 - **Stateless Design**: Adheres to RESTful principles. State is entirely driven by the `messages` array in the request body.
 - **Lightweight Semantic Grounding**: Embeds the catalog locally using `scikit-learn` (TF-IDF) and matches queries using vector cosine similarity. This avoids massive PyTorch dependencies, allowing the app to fit inside Vercel's 500MB serverless constraints.
-- **Strict Schema Compliance**: Enforces exact JSON schemas (Reply, Recommendations, End-of-conversation flag) through `Pydantic` and Gemini Structured Output limits.
+- **Strict Schema Compliance**: Enforces exact JSON schemas (Reply, Recommendations, End-of-conversation flag) through `Pydantic` and Groq Structured Output limits.
 - **Behavioral Guardrails**: Agent explicitly refuses off-topic legal/salary inquiries, clarifies vague requests, and updates shortlists smoothly across turns.
 
 ## 🛠 Prerequisites
 
 - Python 3.11+
-- [Google Gemini API Key](https://aistudio.google.com/)
+- [Groq API Key](https://console.groq.com/keys)
 
 ## ⚙️ Setup Instructions
 
@@ -53,10 +53,9 @@ graph TD
    ```
 
 2. **Configuration**
-   Open the `.env` file and insert your Gemini API Key:
+   Open the `.env` file and insert your Groq API Key:
    ```env
-   GEMINI_API_KEY=your_actual_key_here
-   GEMINI_MODEL=gemini-2.0-flash
+   GROQ_API_KEY=your_actual_key_here
    ```
 
 3. **Running the Server**
@@ -72,7 +71,7 @@ Run the evaluation:
 ```bash
 python evaluate.py
 ```
-*(Note: `evaluate.py` includes a 13-second rate limit throttle to respect the free-tier Gemini API limitations).*
+*(Note: `evaluate.py` includes a 7-second rate limit throttle to respect the free-tier Groq API TPM limitations).*
 
 ## 🔌 API Endpoints
 
