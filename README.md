@@ -1,4 +1,4 @@
-# SHL Conversational Assessment Recommender
+# Conversational Assessment Recommender
 
 A stateless, agentic FastAPI microservice that acts as an intelligent assistant for recommending SHL product catalog assessments. The system uses a semantic retrieval engine to ground its recommendations in actual catalog data and is powered by Google's Gemini LLM with strict behavioral guardrails.
 
