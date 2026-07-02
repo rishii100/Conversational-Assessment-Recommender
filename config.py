@@ -7,6 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = "gemini-2.0-flash"
-TOP_K_RETRIEVAL: int = 25
+GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+LLM_MODEL: str = "llama-3.1-8b-instant"
+TOP_K_RETRIEVAL: int = 8

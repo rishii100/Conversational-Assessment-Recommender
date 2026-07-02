@@ -98,7 +98,7 @@ def replay_conversation(user_messages: list[str]) -> list[dict]:
             resp = requests.post(
                 f"{BASE_URL}/chat",
                 json={"messages": messages},
-                timeout=30,
+                timeout=120,
             )
             resp.raise_for_status()
             data = resp.json()
@@ -109,7 +109,7 @@ def replay_conversation(user_messages: list[str]) -> list[dict]:
         responses.append(data)
 
         import time
-        time.sleep(13)  # Respect free tier rate limits (< 5 RPM)
+        time.sleep(7)  # Guaranteed to stay under 6K TPM limit
         # Add assistant response to history for next turn
         messages.append({"role": "assistant", "content": data.get("reply", "")})
 
