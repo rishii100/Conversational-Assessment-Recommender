@@ -7,6 +7,7 @@ At query time, the user's latest message is embedded and the top-K
 most similar assessments are returned for LLM context injection.
 """
 
+import os
 import logging
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -34,17 +35,21 @@ def build_index() -> None:
     """Build the embeddings matrix from all catalog items. Call once at startup."""
     global _embeddings_matrix, _catalog_items
 
-    catalog = load_catalog()
-    model = _get_model()
+    _catalog_items = load_catalog()
 
+    if os.path.exists("embeddings.npy"):
+        logger.info("Loading precomputed embeddings from embeddings.npy...")
+        _embeddings_matrix = np.load("embeddings.npy")
+        logger.info("Embeddings loaded: %d vectors", _embeddings_matrix.shape[0])
+        return
+
+    model = _get_model()
     # Create search texts for embedding
-    texts = [item["search_text"] for item in catalog]
+    texts = [item["search_text"] for item in _catalog_items]
 
     logger.info("Embedding %d catalog items...", len(texts))
     embeddings = model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
     _embeddings_matrix = np.array(embeddings, dtype="float32")
-
-    _catalog_items = catalog
     logger.info("Embeddings built: %d vectors of dim %d", _embeddings_matrix.shape[0], _embeddings_matrix.shape[1])
 
 
